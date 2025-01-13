@@ -1,8 +1,6 @@
 `timescale 1ns / 1ps
 
 module tb_spi_master;
-
-
     parameter DATA_WIDTH = 24;
     parameter ADDR_WIDTH = 4;
     parameter DEPTH = 1 << ADDR_WIDTH;
@@ -281,7 +279,6 @@ module tb_spi_master;
     task automatic spi_write_burst_task;
         input [6:0] spi_addr; // SPI 从设备地址 
         input [99:0] burst_length;
-
         begin
             spi_addr_master = spi_addr; // Set the SPI address
             spi_data_master = 8'd1; // Set the SPI address
