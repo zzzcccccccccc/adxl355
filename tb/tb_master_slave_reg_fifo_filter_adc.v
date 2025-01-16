@@ -8,6 +8,16 @@ module tb_spi_master;
     // Parameters
     parameter CLK_PERIOD = 20; // 50MHz Clock
     parameter RESET_PERIOD = 100;
+    parameter adc_ClockPeriod = 100;  // 时钟周期为10ns
+
+    // 输入输出信号声明
+    reg                adc_clk;
+    reg                rst_n;
+
+    // cic滤波器输入输出
+    reg  signed [4:0]  dat_in;
+    wire signed [34:0] dat_out;
+    wire signed        adc_clk_vld_out;
 
     // Testbench signals
     reg         mems_clk;
@@ -18,7 +28,7 @@ module tb_spi_master;
     reg [7:0]   spi_data_master;      
     reg [6:0]   spi_addr_master;
 
-    reg         wr_en;
+    wire         wr_en;
     reg  [DATA_WIDTH-1:0]    filter_fifo_data;
 
     wire         reg_spi_rd_valid;
@@ -191,6 +201,21 @@ module tb_spi_master;
     );
 
 
+    adc_top u_adc_top (
+        .clk         ( adc_clk         ),
+        .rstn        ( rst_n       ),
+        .dat_in      ( dat_in      ),
+        .dat_out     ( reg_fifo_read_en  ),
+        .clk_vld_out ( wr_en )
+    );
+
+
+    // 时钟信号生成
+    initial begin
+        adc_clk = 0;
+        forever #(adc_ClockPeriod / 2) adc_clk = ~adc_clk;
+    end
+
 
     // Clock generation
     initial begin
@@ -203,6 +228,41 @@ module tb_spi_master;
         forever #(CLK_PERIOD / 2) mems_clk = ~mems_clk;
     end
 
+    // 定义文件句柄和文件名
+    integer file;
+    integer scan_file;
+    reg signed [31:0] data;
+    reg signed [31:0] data_in;
+
+    assign dat_in = data_in;
+
+    // 初始化并读取文件
+    initial begin
+        rst_n = 0;
+        #adc_ClockPeriod rst_n = 1;
+
+        // 打开文件
+        file = $fopen("/home/summer/Desktop/demo/cic_filter/adc_out.txt", "r");
+
+        // 初始化data_in
+        data_in = 0;
+
+        // 读取文件中的数据
+        while (!$feof(file)) begin
+            scan_file = $fscanf(file, "%d", data);
+            if (scan_file == 1) begin
+                @(posedge adc_clk);
+                data_in = data;
+            end
+        end
+
+        $fclose(file);
+
+        #adc_ClockPeriod
+        $finish;
+    end
+
+
     // Reset sequence
     initial begin
         rst_n = 1;
@@ -210,6 +270,12 @@ module tb_spi_master;
         rst_n = 0;
         #(RESET_PERIOD);
         rst_n = 1;
+    end
+
+    // 时钟信号生成
+    initial begin
+        adc_clk = 0;
+        forever #(adc_ClockPeriod / 2) adc_clk = ~adc_clk;
     end
 
 /*
@@ -226,7 +292,7 @@ module tb_spi_master;
         end
     end
 */
-
+/*
     initial begin
         @(posedge rst_n);
         repeat (48) begin
@@ -238,7 +304,7 @@ module tb_spi_master;
         end
 
     end
-
+*/
 
     initial begin
         #(RESET_PERIOD * 5);

@@ -29,7 +29,7 @@ module adc_top (
     input  wire                rstn,
     input  wire signed [4:0]   dat_in,
     output wire                clk_vld_out,
-    output wire signed [31:0]  dat_out
+    output wire signed [19:0]  dat_out
 );
 
     // cic滤波器输出
@@ -86,6 +86,8 @@ module adc_top (
         .dat_out     ( hb2_dat_out     )
     );
 
+    assign dat_out = hb2_dat_out[34:15];
+    
     // 输出数据转换为IEEE754格式
 //    fix2float u_fix2float (
 //    .fixed_i ( hb2_dat_out ),

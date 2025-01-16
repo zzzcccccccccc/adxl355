@@ -24,29 +24,29 @@
 
 module adc_top_tb;
 
-    parameter ClockPeriod = 10;  // 时钟周期为10ns
+    parameter adc_ClockPeriod = 10;  // 时钟周期为10ns
 
     // 输入输出信号声明
-    reg                clk;
+    reg                adc_clk;
     reg                rst_n;
 
     // cic滤波器输入输出
     reg  signed [4:0]  dat_in;
     wire signed [34:0] dat_out;
-    wire signed        clk_vld_out;
+    wire signed        adc_clk_vld_out;
 
     adc_top u_adc_top (
-        .clk         ( clk         ),
-        .rstn        ( rst_n       ),
-        .dat_in      ( dat_in      ),
-        .dat_out     ( dat_out     ),
-        .clk_vld_out ( clk_vld_out )
+        .adc_clk         ( adc_clk         ),
+        .rstn            ( rst_n           ),
+        .dat_in          ( dat_in          ),
+        .dat_out         ( dat_out         ),
+        .adc_clk_vld_out ( adc_clk_vld_out )
     );
 
     // 时钟信号生成
     initial begin
-        clk = 0;
-        forever #(ClockPeriod / 2) clk = ~clk;
+        adc_clk = 0;
+        forever #(adc_ClockPeriod / 2) adc_clk = ~adc_clk;
     end
 
     // 定义文件句柄和文件名
@@ -60,7 +60,7 @@ module adc_top_tb;
     // 初始化并读取文件
     initial begin
         rst_n = 0;
-        #ClockPeriod rst_n = 1;
+        #adc_ClockPeriod rst_n = 1;
 
         // 打开文件
         file = $fopen("/home/summer/Desktop/demo/cic_filter/adc_out.txt", "r");
@@ -72,14 +72,14 @@ module adc_top_tb;
         while (!$feof(file)) begin
             scan_file = $fscanf(file, "%d", data);
             if (scan_file == 1) begin
-                @(posedge clk);
+                @(posedge adc_clk);
                 data_in = data;
             end
         end
 
         $fclose(file);
 
-        #ClockPeriod
+        #adc_ClockPeriod
         $finish;
     end
 

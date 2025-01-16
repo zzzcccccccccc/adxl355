@@ -1,5 +1,7 @@
 module synchronous_fifo#(
     parameter   DATA_WIDTH = 24,
+    parameter   filter_DATA_WIDTH = 20,
+
     parameter   ADDR_WIDTH = 4,
     parameter   DEPTH = 1 << ADDR_WIDTH
 )(
@@ -7,7 +9,7 @@ module synchronous_fifo#(
     input                      rst_n,
     input                      wr_en,
     input                      reg_fifo_read_en,
-    input  [DATA_WIDTH-1:0]    filter_fifo_data,
+    input  [filter_DATA_WIDTH-1:0]    filter_fifo_data,
 
     output                     full,    
     output                     empty,    
@@ -66,7 +68,7 @@ module synchronous_fifo#(
             for(i=0;i < DEPTH;i++)
                 ram[i] <= {DATA_WIDTH{1'b0}};
         end else if (wr_en)
-            ram[wr_ptr] <= filter_fifo_data;
+            ram[wr_ptr][DATA_WIDTH-1:DATA_WIDTH-1-19] <= filter_fifo_data;
     end
 
     always @(posedge clk or negedge rst_n) begin
