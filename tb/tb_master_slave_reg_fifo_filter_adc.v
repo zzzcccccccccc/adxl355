@@ -16,7 +16,7 @@ module tb_spi_master;
 
     // cic滤波器输入输出
     reg  signed [4:0]  dat_in;
-    wire signed [34:0] dat_out;
+    wire signed [19:0] dat_out;
     wire signed        adc_clk_vld_out;
 
     // Testbench signals
@@ -29,7 +29,7 @@ module tb_spi_master;
     reg [6:0]   spi_addr_master;
 
     wire         wr_en;
-    reg  [DATA_WIDTH-1:0]    filter_fifo_data;
+    reg  [19:0]    filter_fifo_data;
 
     wire         reg_spi_rd_valid;
     wire [7:0]   reg_spi_rd_data;
@@ -205,7 +205,7 @@ module tb_spi_master;
         .clk         ( adc_clk         ),
         .rstn        ( rst_n       ),
         .dat_in      ( dat_in      ),
-        .dat_out     ( reg_fifo_read_en  ),
+        .dat_out     ( filter_fifo_data  ),
         .clk_vld_out ( wr_en )
     );
 
@@ -308,7 +308,9 @@ module tb_spi_master;
 
     initial begin
         #(RESET_PERIOD * 5);
-        spi_write_task(7'h20,8'hff);
+//        spi_write_task(7'h20,8'hff);
+        #(CLK_PERIOD * 400000);
+
         #(CLK_PERIOD * 40);
         spi_read_task (7'h20);
         #(CLK_PERIOD * 40);
